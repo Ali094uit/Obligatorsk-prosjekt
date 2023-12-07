@@ -1,0 +1,101 @@
+﻿@page "/createblogpost"
+@using AndreasBlog.Shared
+@inject AndreasBlog.Client.Services.IBlogService blogService
+@inject NavigationManager NavigationManager;
+@using System.IdentityModel.Tokens.Jwt;
+@using AndreasBlog.Client.Services
+@inject TokenService TokenService
+@inject AuthenticationService AuthService
+
+
+<h1>Create Blog Post</h1>
+
+@if (isAuthenticated)
+{
+    <EditForm Model="@blogPost" OnValidSubmit="CreateBlogPost">
+        <DataAnnotationsValidator />
+
+        <div class="form-group">
+            <label for="title">Title:</label>
+            <InputText id="title" class="form-control" @bind-Value="blogPost.Title" />
+            <ValidationMessage For="@(() => blogPost.Title)" />
+        </div>
+
+        <div class="form-group">
+            <label for="content">Content:</label>
+            <InputTextArea id="content" class="form-control" @bind-Value="blogPost.Content" />
+            <ValidationMessage For="@(() => blogPost.Content)" />
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description:</label>
+            <InputText id="description" class="form-control" @bind-Value="blogPost.Description" />
+            <ValidationMessage For="@(() => blogPost.Description)" />
+        </div>
+
+        <div class="form-group">
+            <label for="author">Author:</label>
+            <InputText id="author" class="form-control" @bind-Value="blogPost.Author" />
+        </div>
+
+        <div class="form-group">
+            <label for="image">Image URL:</label>
+            <InputText id="image" class="form-control" @bind-Value="blogPost.Image" />
+        </div>
+        <br />
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary"><i class="oi oi-plus"></i>Opprett</button>
+        </div>
+    </EditForm>
+}
+else
+{
+        <p>Logg inn for å lag post</p>
+}
+
+@code {
+    private AndreasBlog.Shared.BlogPost blogPost = new AndreasBlog.Shared.BlogPost();
+    private bool isSaved = false;
+    private string? token;
+    private string? id;
+    private bool isAuthenticated;
+
+    protected override async Task OnInitializedAsync()
+    {
+        token = await TokenService.GetTokenAsync();
+
+        if(token != null)
+        {
+            id = DecodeJwtToken(token);
+
+            isAuthenticated = await AuthService.IsUserAuthorized();
+        }
+        else
+        {
+            Console.WriteLine("Token ikke funnet, vennligst logg inn");
+        }
+    }
+
+    async Task CreateBlogPost()
+    {
+        blogPost.UserId = id;
+        //Opprettelse av blog
+        var result = await blogService.CreateBlogPost(blogPost);
+        NavigationManager.NavigateTo("/");
+    }
+
+    private string DecodeJwtToken(string token)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadToken(token) as JwtSecurityToken;
+
+        var userId = jwtToken?.Claims.FirstOrDefault(claim => claim.Type == "userId");
+
+        if (userId != null)
+        {
+            return userId.Value;
+        }
+        return "Ingen brukerID funnet";
+    }
+
+}

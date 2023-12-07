@@ -1,0 +1,61 @@
+﻿@page "/blogPost"
+@using AndreasBlog.Shared;
+@inject AndreasBlog.Client.Services.IBlogService blogService
+
+
+<h1>Tilgjengelige blogger</h1>
+
+<div class="row">
+    @if(Posts != null)
+    {
+      foreach(var post in Posts)
+        {
+            <table class="table">
+                <thead></thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <p>@post.Title</p>
+                            @if (!string.IsNullOrEmpty(post.Image))
+                                {
+                                <tr>
+                                    <img src="@post.Image" alt="Blog Image" style="max-width: 100%; max-height: 200px;"/>
+                                </tr>
+                                }
+                        </td>
+                            <td>
+                                <p>@post.Content</p>
+                            </td>
+                            <td>
+                                <NavLink class="nav-link">
+                                        <a href="/post/@post.Title">Gå til blogg</a>
+                                </NavLink>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table> 
+        }
+    }
+     else
+    {
+        <div class="badge text-center">Vennligst vent...</div>
+    }
+
+</div>
+
+@code {
+
+    private List<AndreasBlog.Shared.BlogPost> Posts = new List<AndreasBlog.Shared.BlogPost>();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Posts = await blogService.GetAllBlogPosts();
+    }
+
+    //protected override async Task OnInitializedAsync()
+    //{
+    //    Posts = (await blogService.GetAllBlogPosts()).ToList();
+    //}
+
+}
+

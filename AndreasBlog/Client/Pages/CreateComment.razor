@@ -1,0 +1,77 @@
+﻿@page "/createComment/{postId}"
+@using AndreasBlog.Shared
+@inject AndreasBlog.Client.Services.IBlogService blogService
+@inject Microsoft.AspNetCore.Components.NavigationManager NavigationManager
+@using System.IdentityModel.Tokens.Jwt;
+@using AndreasBlog.Client.Services
+@inject TokenService TokenService
+
+<h1>Legg til kommentar</h1>
+
+<EditForm Model="@CurrentComment" OnValidSubmit="create">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="text"</label>
+        <InputTextArea id="text" class="form-control" @bind-Value="@CurrentComment.Text" required />
+    </div>
+    <br />
+    <br />
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Comment</button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public string? postId { get; set; }
+
+    private string? userId;
+    private string? token;
+
+    protected override async Task OnInitializedAsync()
+    {
+        token = await TokenService.GetTokenAsync();
+
+        userId = DecodeJwtToken(token);
+    }
+
+    private Comment CurrentComment = new Comment();
+
+    private async Task create()
+    {
+        //Legger på blogpostId og userId til det nye comment objektet. 
+        CurrentComment.UserId = userId;
+        if(int.TryParse(postId, out int postIdValue))
+        {
+            CurrentComment.BlogPostId = postIdValue;
+        }
+        // Legg til kommentar ved å kalle blogService
+        await blogService.CreateComment(CurrentComment);
+
+        int? blogPostId = int.TryParse(postId, out int result) ? result : (int?)null;
+
+        var blgPst = await blogService.GetBlogPostById(blogPostId);
+        // Naviger tilbake til bloggposten etter at kommentaren er lagt til
+        var title = blgPst.Title;
+
+        NavigationManager.NavigateTo($"/post/{title}");
+
+    }
+
+    private string DecodeJwtToken(string token)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadToken(token) as JwtSecurityToken;
+
+        var userId = jwtToken?.Claims.FirstOrDefault(claim => claim.Type == "userId");
+
+        if (userId != null)
+        {
+            return userId.Value;
+        }
+        return "Ingen brukerID funnet";
+    }
+}
+

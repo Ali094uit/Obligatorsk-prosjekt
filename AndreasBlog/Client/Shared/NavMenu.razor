@@ -1,0 +1,69 @@
+﻿@using Blazored.Typeahead;
+@using AndreasBlog.Shared;
+@inject AndreasBlog.Client.Services.IBlogService blogService
+@inject NavigationManager NavigationManager
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">AndreasBlog</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div style="width: 25%; margin-left: 15%; text-align: center; color: white; margin-bottom: 10%">
+            <BlazoredTypeahead SearchMethod="@GetSearchResult" Value="selectedBlog" TValue="BlogPost" TItem="BlogPost" ValueChanged="HandleSearch" ValueExpression="@(()=>selectedBlog)" placeholder="Søk">
+                <SelectedTemplate>
+                    @context.Title
+                </SelectedTemplate>
+                <ResultTemplate>
+                    @context.Title
+                </ResultTemplate>
+                <NotFoundTemplate>
+                    Ingen blog funnet..
+                </NotFoundTemplate>
+            </BlazoredTypeahead>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Hjem
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="createBlogPost">
+                <span class="oi oi-plus" aria-hidden="true"></span> Opprett ny
+            </NavLink>
+        </div>
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    private BlogPost selectedBlog;
+
+    public async Task<IEnumerable<BlogPost>> GetSearchResult(string searchText)
+    {
+        var response = await blogService.SearchBlogs(searchText);
+        return response;
+    }
+
+    private void HandleSearch(BlogPost blogPost)
+    {
+        if (blogPost == null) return;
+        selectedBlog = blogPost;
+        NavigationManager.NavigateTo($"post/{selectedBlog.Title}", true);
+    }
+
+}
+

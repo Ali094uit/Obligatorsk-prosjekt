@@ -1,0 +1,119 @@
+﻿@page "/post/{title}"
+@inject AndreasBlog.Client.Services.IBlogService blogService
+@inject NavigationManager NavigationManager;
+@using AndreasBlog.Client.Services
+@using System.Security.Claims;
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationService AuthService
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+
+@if (isAuthorized)
+{
+    <div class="row">
+        @if (CurrentPost != null)
+        {
+            <table class="table">
+                <thead></thead>
+                <tbody>
+                    <tr>
+                        <td class="text-center" colspan="10">
+                            <h1>@CurrentPost.Title</h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-center" colspan="10">
+                            @if (!string.IsNullOrEmpty(CurrentPost.Image))
+                            {
+                                <img src="@CurrentPost.Image" alt="Blog Image" style="max-width: 100%; max-height: 200px;" />
+                            }
+                            <p>@CurrentPost.Content</p>
+                        </td>
+                        <td>
+                            <div class="form-group row">
+                                <div class="ml-auto">
+                                    <button type="submit" class="btn btn-primary" @onclick="DeletePost">Slett</button>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <p>@CurrentPost.Likes</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="5" class="text-right">
+                            <button type="submit" class="btn btn-primary" @onclick="Like"><i class="fas fa-thumbs-up"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <button class="btn btn-primary" @onclick="gotoCreateComment">Legg til kommentar</button>
+            <h2>Kommentarer</h2>
+
+            @if (CurrentPost.Comments != null && CurrentPost.Comments.Any())
+            {
+                <ul>
+                    @foreach (var comment in CurrentPost.Comments)
+                    {
+                        <li>
+                            <p>@comment.Text</p>
+                            <p>@comment.DateCreated</p>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p>Ingen kommentarer.</p>
+            }
+        }
+        else
+        {
+            <div class="badge text-center">Posten eksisterer ikke...</div>
+        }
+    </div>
+}
+else
+{
+    <p>Du må logge inn for å se poster</p>
+}
+
+
+
+
+@code {
+
+    [Parameter]
+    public string title { get; set; } = string.Empty;
+
+    private AndreasBlog.Shared.BlogPost CurrentPost = new AndreasBlog.Shared.BlogPost();
+
+    private bool isAuthorized;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CurrentPost = await blogService.GetBlogPost(title);
+        isAuthorized = await AuthService.IsUserAuthorized();
+    }
+
+    private void gotoCreateComment()
+    {
+        NavigationManager.NavigateTo($"/createComment/{CurrentPost.id.ToString()}");
+    }
+
+    private async void DeletePost()
+    {
+        await blogService.DeleteBlogPost(CurrentPost.id);
+        NavigationManager.NavigateTo("/blogPost");
+    }
+
+    private async void Like()
+    {
+        await blogService.Like(CurrentPost.id);
+        StateHasChanged();
+    }
+
+}
+

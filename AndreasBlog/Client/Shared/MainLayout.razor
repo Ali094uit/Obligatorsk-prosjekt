@@ -1,0 +1,71 @@
+﻿@inherits LayoutComponentBase
+@using AndreasBlog.Client.Services;
+@inject AuthenticationService authService
+@using System.Threading
+@inject AndreasBlog.Client.Services.IBlogService blogService
+
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4">
+            @if (!isAuthenticated)
+            {
+                <NavLink class="nav-link" href="/createUser">
+                    <span class="oi oi-account-login" aria-hidden="true"></span> Registrer
+                </NavLink>
+
+                <NavLink class="nav-link" href="/login">
+                    <span class="oi oi-account-login" aria-hidden="true"></span> Logg inn
+                </NavLink>
+
+            }
+            else if (isAuthenticated)
+            {
+                <NavLink class="nav-link" href="#" @onclick="Logout">
+                    <span class="oi oi-account-logout" aria-hidden="true"></span> Logg ut
+                </NavLink>
+            }
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    private bool isAuthenticated;
+    private Timer timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isAuthenticated = await authService.IsUserAuthorized();
+        InitializeTimer();
+    }
+
+    private void InitializeTimer()
+    {
+        TimerCallback timerCallback = async state => await UpdateAuthenticationStatus();
+        timer = new Timer(timerCallback, null, 0, 100);
+    }
+
+    private async Task UpdateAuthenticationStatus()
+    {
+        isAuthenticated = await authService.IsUserAuthorized();
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        timer?.Dispose();
+    }
+
+    private async Task Logout()
+    {
+        authService.Logout();
+    }
+}

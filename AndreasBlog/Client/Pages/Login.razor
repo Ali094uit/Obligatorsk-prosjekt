@@ -1,0 +1,52 @@
+﻿@page "/login"
+@using AndreasBlog.Shared;
+@using AndreasBlog.Client.Services
+@inject AndreasBlog.Client.Services.IBlogService blogService
+@inject NavigationManager NavigationManager
+@inject TokenService TokenService
+@using Microsoft.AspNetCore.Components.Authorization
+
+<EditForm Model="loginModel" OnSubmit="HandleLogin">
+    <div class="form-group row">
+        <label for="username" class="col-sm-3 col-form-label">Username</label>
+        <div class="col-sm-6">
+            <InputText id="username" @bind-Value="loginModel.UserName" class="form-control"></InputText>
+        </div>
+    </div>
+    <br />
+    <div class="form-group row">
+        <label for="password" class="col-sm-3 col-form-label">Password</label>
+        <div class="col-sm-6">
+            <InputText id="password" @bind-Value="loginModel.Password" type="password" class="form-control"></InputText>
+        </div>
+    </div>
+    <br />
+    <br />
+    <div class="form-group row">
+        <div class="col-sm-6 offset-sm-3">
+            <button type="submit" class="btn btn-primary">Logg inn</button>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private LoginRequestModel loginModel = new LoginRequestModel();
+
+    private async Task HandleLogin()
+    {
+        var result = await blogService.LoginUser(loginModel.UserName, loginModel.Password);
+
+        if (!string.IsNullOrEmpty(result))
+
+        {
+            await TokenService.SetTokenAsync(result);
+            // Innloggingen var vellykket, naviger til ønsket side
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            Console.WriteLine("Innlogging mislyktes eller ugyldige opplysninger");
+        }
+    }
+}
+

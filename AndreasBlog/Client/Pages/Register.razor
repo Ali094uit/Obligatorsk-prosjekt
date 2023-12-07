@@ -1,0 +1,48 @@
+﻿@page "/createUser"
+@using AndreasBlog.Shared
+@inject AndreasBlog.Client.Services.IBlogService blogService
+@inject NavigationManager NavigationManager
+
+<EditForm Model="@CurrentUser" OnValidSubmit="CreateUser">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group row">
+        <label for="Username" class="col-sm-3 col-form-label">Username</label>
+        <div class="col-sm-6">
+            <InputText id="Username" @bind-Value="CurrentUser.UserName" required class="form-control"/>
+        </div>
+    </div>
+    <br />
+    <div class="form-group row">
+        <label for="password" class="col-sm-3 col-form-label">Password</label>
+        <div class="col-sm-6">
+            <InputText id="Password" @bind-Value="@CurrentUser.PasswordHash" required class="form-control"/>
+        </div>
+    </div>
+        <br />
+        <br />
+    <div class="form-group row">
+        <div class="col-sm-6 offset-sm-3">
+            <button type="submit" class="btn btn-primary">Registrer</button>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private User CurrentUser = new User();
+
+    async Task CreateUser()
+    {
+        var createdUser = await blogService.CreateUser(CurrentUser);
+        if (createdUser != null)
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+        else
+        {
+            Console.WriteLine($"Feil ved opprettelse av bruker");
+        }
+    }
+}
+
