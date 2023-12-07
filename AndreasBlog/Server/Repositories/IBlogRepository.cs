@@ -23,6 +23,8 @@ namespace AndreasBlog.Server.Repositories
         //Bruker
         Task<User?> CreateUser(User user);
 
+        Task<User?> GetUserById(string Id);
+
         Task<string?> Login(string username, string password);
 
         //Kommentar

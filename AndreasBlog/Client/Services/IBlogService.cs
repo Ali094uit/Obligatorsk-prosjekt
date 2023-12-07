@@ -22,6 +22,8 @@ namespace AndreasBlog.Client.Services
         //Bruker
         Task<User?> CreateUser(User user);
 
+        Task<User?> GetUserById(string Id);
+
         Task<string?> LoginUser(string username, string password);
 
         //Kommentar

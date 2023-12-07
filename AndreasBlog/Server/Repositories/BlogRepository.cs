@@ -143,6 +143,11 @@ namespace AndreasBlog.Server.Repositories
             await appDbContext.SaveChangesAsync();
 
         }
+
+        public async Task<User?> GetUserById(string id)
+        {
+            return await appDbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+        }
     }
 }
 

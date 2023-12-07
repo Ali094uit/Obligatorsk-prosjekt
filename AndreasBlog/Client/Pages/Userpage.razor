@@ -1,0 +1,65 @@
+﻿@page "/userpage"
+@using AndreasBlog.Shared
+@using AndreasBlog.Client.Services
+@inject AndreasBlog.Client.Services.IBlogService blogService
+@inject NavigationManager NavigationManager
+@inject TokenService TokenService
+@inject AuthenticationService AuthService
+@using System.IdentityModel.Tokens.Jwt;
+
+
+@if (UserInfo != null)
+{
+    <h1>Velkommen til din side, @UserInfo.UserName</h1>
+
+    <p>Rediger din informasjon nedenfor</p>
+    <br />
+    <p>Email: @UserInfo.Email</p>
+    <p>Mobilnummer: @UserInfo.PhoneNumber</p>
+    <p>Passord: @UserInfo.PasswordHash</p>
+}
+else
+{
+    <p>Feil ved lasting av brukerinformasjon.</p>
+}
+
+@code {
+    private User UserInfo;
+    private string? token;
+    private string? id;
+    private bool isAuthenticated;
+
+    protected override async Task OnInitializedAsync()
+    {
+        token = await TokenService.GetTokenAsync();
+
+        if (token != null)
+        {
+            id = DecodeJwtToken(token);
+
+            isAuthenticated = await AuthService.IsUserAuthorized();
+
+            UserInfo = await blogService.GetUserById(id);
+        }
+        else
+        {
+            Console.WriteLine("Token ikke funnet, vennligst logg inn");
+        }
+    }
+
+    private string DecodeJwtToken(string token)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadToken(token) as JwtSecurityToken;
+
+        var userId = jwtToken?.Claims.FirstOrDefault(claim => claim.Type == "userId");
+
+        if (userId != null)
+        {
+            return userId.Value;
+        }
+        return "Ingen brukerID funnet";
+    }
+}
+
+

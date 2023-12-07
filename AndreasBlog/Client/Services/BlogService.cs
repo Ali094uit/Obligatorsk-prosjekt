@@ -165,6 +165,24 @@ namespace AndreasBlog.Client.Services
                 return false;
             }
         }
+
+        public async Task<User?> GetUserById(string id)
+        {
+            var result = await httpClient.GetAsync($"api/Blogs/userpage/{id}");
+
+            if (result.IsSuccessStatusCode)
+            {
+                // Request was successful, deserialize and return the User
+                return await result.Content.ReadFromJsonAsync<User>();
+            }
+            else
+            {
+                // Request failed, return a User with the error message
+                var message = await result.Content.ReadAsStringAsync();
+                return null; // eller returner en feilindikasjon som passer for din applikasjon
+            }
+        }
+
     }
 }
 

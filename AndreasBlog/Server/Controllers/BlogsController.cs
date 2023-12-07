@@ -68,6 +68,24 @@ namespace AndreasBlog.Server.Controllers
             }
         }
 
+        [HttpGet("userpage/{Id}")]
+        public async Task<ActionResult<User>> GetUser(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest("Invalid user ID");
+            }
+
+            var user = await blogRepository.GetUserById(id);
+
+            if (user == null)
+            {
+                return NotFound($"User with ID {id} not found");
+            }
+
+            return Ok(user);
+        }
+
 
 
         [HttpGet("{title}")]
