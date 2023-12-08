@@ -7,59 +7,105 @@
 @inject AuthenticationService AuthService
 @using System.IdentityModel.Tokens.Jwt;
 
-
-@if (UserInfo != null)
-{
-    <h1>Velkommen til din side, @UserInfo.UserName</h1>
-
-    <p>Rediger din informasjon nedenfor</p>
-    <br />
-    <p>Email: @UserInfo.Email</p>
-    <p>Mobilnummer: @UserInfo.PhoneNumber</p>
-    <p>Passord: @UserInfo.PasswordHash</p>
-}
-else
-{
-    <p>Feil ved lasting av brukerinformasjon.</p>
-}
-
-@code {
-    private User UserInfo;
-    private string? token;
-    private string? id;
-    private bool isAuthenticated;
-
-    protected override async Task OnInitializedAsync()
-    {
-        token = await TokenService.GetTokenAsync();
-
-        if (token != null)
-        {
-            id = DecodeJwtToken(token);
-
-            isAuthenticated = await AuthService.IsUserAuthorized();
-
-            UserInfo = await blogService.GetUserById(id);
-        }
-        else
-        {
-            Console.WriteLine("Token ikke funnet, vennligst logg inn");
-        }
+<style>
+    body {
+        background-color: #f0f0f0;
+        background-image: url('https://www.creativefabrica.com/wp-content/uploads/2020/02/13/Background-Graphics-1-117-580x353.jpg'); /* Bakgrunnsbilde (endre til banen til bildet) */
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
     }
 
-    private string DecodeJwtToken(string token)
-    {
-        var handler = new JwtSecurityTokenHandler();
-        var jwtToken = handler.ReadToken(token) as JwtSecurityToken;
-
-        var userId = jwtToken?.Claims.FirstOrDefault(claim => claim.Type == "userId");
-
-        if (userId != null)
-        {
-            return userId.Value;
-        }
-        return "Ingen brukerID funnet";
+    .content-container {
+        max-width: 800px; 
+        margin: 0 auto; 
+        padding: 20px; 
     }
-}
+</style>
+
+<div class="content-container">
+
+    @if (UserInfo != null)
+    {
+        <h1 style="color: white;">Velkommen til din side, @UserInfo.UserName</h1>
+
+        <p>Rediger din informasjon nedenfor</p>
+
+        <EditForm Model="@UserInfo" OnValidSubmit="UpdateUserInfo">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group row">
+                <label for="Email" class="col-sm-3 col-form-label">Email</label>
+                <div class="col-sm-6">
+                    <InputText id="Email" @bind-Value="UserInfo.Email" required class="form-control" />
+                </div>
+            </div>
+            <br />
+            <div class="form-group row">
+                <label for="PhoneNumber" class="col-sm-3 col-form-label">Phone Number</label>
+                <div class="col-sm-6">
+                    <InputText id="PhoneNumber" @bind-Value="UserInfo.PhoneNumber" required class="form-control" />
+                </div>
+            </div>
+            <br />
+            <br />
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Lagre endringer</button>
+            </div>
+        </EditForm>
+
+    }
+    else
+    {
+        <p>Feil ved lasting av brukerinformasjon.</p>
+    }
+</div>
+
+    @code {
+        private User UserInfo;
+        private string? token;
+        private string? id;
+        private bool isAuthenticated;
+
+        protected override async Task OnInitializedAsync()
+        {
+            token = await TokenService.GetTokenAsync();
+
+            if (token != null)
+            {
+                id = DecodeJwtToken(token);
+
+                isAuthenticated = await AuthService.IsUserAuthorized();
+
+                UserInfo = await blogService.GetUserById(id);
+            }
+            else
+            {
+                Console.WriteLine("Token ikke funnet, vennligst logg inn");
+            }
+        }
+
+        private string DecodeJwtToken(string token)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadToken(token) as JwtSecurityToken;
+
+            var userId = jwtToken?.Claims.FirstOrDefault(claim => claim.Type == "userId");
+
+            if (userId != null)
+            {
+                return userId.Value;
+            }
+            return "Ingen brukerID funnet";
+        }
+
+        private async Task UpdateUserInfo()
+        {
+            // Oppdater brukerens informasjon ved å kalle riktige API-endepunkter
+            //var updatedUser = await blogService.UpdateUserInfo(UserInfo);
+
+        }
+    }
 
 

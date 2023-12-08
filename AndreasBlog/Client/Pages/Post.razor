@@ -6,6 +6,7 @@
 @using Microsoft.AspNetCore.Authorization;
 @using Microsoft.AspNetCore.Components.Authorization
 @inject AuthenticationService AuthService
+@using System.Web
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
 
@@ -24,7 +25,13 @@
                     </tr>
                     <tr>
                         <td class="text-center" colspan="10">
-                            @if (!string.IsNullOrEmpty(CurrentPost.Image))
+                            @if (IsYouTubeLink(CurrentPost.Image))
+                            {
+                                <div class="video-container">
+                                    <iframe width="300px" height="300px" src="@EmbedYouTubeLink(CurrentPost.Image)" frameborder="0"></iframe>
+                                </div>
+                            }
+                            else
                             {
                                 <img src="@CurrentPost.Image" alt="Blog Image" style="max-width: 100%; max-height: 200px;" />
                             }
@@ -115,5 +122,25 @@ else
         StateHasChanged();
     }
 
+    private bool IsYouTubeLink(string link)
+    {
+        return link.Contains("youtube.com") || link.Contains("youtu.be");
+    }
+
+    private string EmbedYouTubeLink(string link)
+    {
+        // Bygg en innebygd lenke for YouTube-videoen
+        var videoId = GetYouTubeVideoId(link);
+        return $"https://www.youtube.com/embed/{videoId}";
+    }
+
+    private string GetYouTubeVideoId(string link)
+    {
+        // Hent video-ID fra YouTube-lenken
+        var uri = new Uri(link);
+        var query = uri.Query;
+        var parameters = HttpUtility.ParseQueryString(query);
+        return parameters["v"];
+    }
 }
 
