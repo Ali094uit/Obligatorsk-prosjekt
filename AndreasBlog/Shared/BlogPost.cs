@@ -7,10 +7,9 @@ namespace AndreasBlog.Shared
 	{
 		public int id { get; set; }
 
-        [Required(ErrorMessage = "Tittel er påkrevd"), StringLength(50, ErrorMessage = "Max lengde 50")]
+        [Required(ErrorMessage = "Tittel er påkrevd"), StringLength(50, ErrorMessage = "Maks tekstlengde 50")]
         public string Title { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Innhold er påkrevd")]
         public string Content { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Beskrivelse er påkrevd")]

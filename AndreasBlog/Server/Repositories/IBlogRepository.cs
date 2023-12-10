@@ -27,6 +27,8 @@ namespace AndreasBlog.Server.Repositories
 
         Task<string?> Login(string username, string password);
 
+		Task<User?> UpdateUserInfo(string userId, string email, string phoneNumber);
+
         //Kommentar
         Task<Comment?> CreateComment(Comment comment);
 		Task<List<Comment?>> GetComments(int postId);

@@ -26,6 +26,8 @@ namespace AndreasBlog.Client.Services
 
         Task<string?> LoginUser(string username, string password);
 
+        Task<User> UpdateUserInfo(User user);
+
         //Kommentar
         Task<Comment?> CreateComment(Comment comment);
 

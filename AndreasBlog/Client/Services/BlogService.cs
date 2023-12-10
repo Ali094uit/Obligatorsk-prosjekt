@@ -20,7 +20,7 @@ namespace AndreasBlog.Client.Services
 
             if (!result.IsSuccessStatusCode)
             {
-                // Log or handle the error appropriately
+                
                 Console.WriteLine($"HTTP request failed with status code: {result.StatusCode}");
                 return null;
             }
@@ -114,12 +114,12 @@ namespace AndreasBlog.Client.Services
 
             if (result.IsSuccessStatusCode)
             {
-                // Request was successful, deserialize and return the BlogPost
+                
                 return await result.Content.ReadFromJsonAsync<BlogPost>();
             }
             else
             {
-                // Request failed, return a BlogPost with the error message
+                
                 var message = await result.Content.ReadAsStringAsync();
                 return new BlogPost { Title = message };
             }
@@ -172,17 +172,34 @@ namespace AndreasBlog.Client.Services
 
             if (result.IsSuccessStatusCode)
             {
-                // Request was successful, deserialize and return the User
+                
                 return await result.Content.ReadFromJsonAsync<User>();
             }
             else
             {
-                // Request failed, return a User with the error message
                 var message = await result.Content.ReadAsStringAsync();
-                return null; // eller returner en feilindikasjon som passer for din applikasjon
+                return null; 
             }
         }
 
+        public async Task<User> UpdateUserInfo(User user)
+        {
+            try
+            {
+                var response = await httpClient.PutAsJsonAsync($"api/Blogs/userpage/update/{user.Id}", user);
+                response.EnsureSuccessStatusCode();
+
+                return await response.Content.ReadFromJsonAsync<User>();
+
+            }
+
+            catch (Exception ex)
+            {
+                
+                Console.WriteLine($"Feil ved oppdatering av brukerinformasjon: {ex.Message}");
+                return null;
+            }
+        }
     }
 }
 

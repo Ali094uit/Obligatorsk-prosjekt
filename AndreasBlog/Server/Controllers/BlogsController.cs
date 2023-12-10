@@ -80,12 +80,38 @@ namespace AndreasBlog.Server.Controllers
 
             if (user == null)
             {
-                return NotFound($"User with ID {id} not found");
+                return NotFound($"Bruker med id: {id}, ikke funnet");
             }
 
             return Ok(user);
         }
 
+        [HttpPut("userpage/update/{Id}")]
+        public async Task<ActionResult<User>> UpdateUserInfo(string id, [FromBody] User user)
+        {
+            try
+            {
+                var userId = id;
+                var email = user.Email;
+                var phoneNumber = user.PhoneNumber; 
+
+                // Kall tjenesten for å utføre oppdateringen
+                var updatedUserResult = await blogRepository.UpdateUserInfo(userId, email, phoneNumber);
+
+                if (updatedUserResult != null)
+                {
+                    return Ok(updatedUserResult);
+                }
+                else
+                {
+                    return BadRequest("Feil ved oppdatering av brukerinformasjon");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Intern serverfeil: {ex.Message}");
+            }
+        }
 
 
         [HttpGet("{title}")]
@@ -136,7 +162,6 @@ namespace AndreasBlog.Server.Controllers
                 return Ok(jwtToken);
             }
 
-            // Håndter feil eller ugyldige innloggingsopplysninger
             return BadRequest(jwtToken);
         }
     }

@@ -148,6 +148,36 @@ namespace AndreasBlog.Server.Repositories
         {
             return await appDbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
         }
+
+        public async Task<User?> UpdateUserInfo(string id, string email, string phoneNumber)
+        {
+            try
+            {
+                
+                var userToUpdate = await appDbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+
+                if (userToUpdate != null)
+                {
+                    
+                    userToUpdate.Email = email;
+                    userToUpdate.PhoneNumber = phoneNumber;
+
+                    
+                    await appDbContext.SaveChangesAsync();
+                    return userToUpdate;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                
+                Console.WriteLine($"Feil ved oppdatering i databasen: {ex.Message}");
+                return null;
+            }
+        }
     }
 }
 
